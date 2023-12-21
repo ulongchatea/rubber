@@ -1,0 +1,64 @@
+Sub CheckAndExportResultsToSheet()
+    Dim selectedRange As Range
+    Dim cell As Range
+    Dim outputText As String
+    Dim resultSheet As Worksheet
+    Dim rowIndex As Integer
+    
+    ' 선택된 범위 가져오기
+    On Error Resume Next
+    Set selectedRange = Selection
+    On Error GoTo 0
+    
+    ' 선택된 범위가 없으면 메시지 표시 후 종료
+    If selectedRange Is Nothing Then
+        MsgBox "선택된 범위가 없습니다.", vbExclamation
+        Exit Sub
+    End If
+    
+    ' 새로운 시트 생성 또는 기존 시트 가져오기
+    On Error Resume Next
+    Set resultSheet = Worksheets("CheckResults")
+    On Error GoTo 0
+    
+    ' 기존 시트가 없으면 새로운 시트 생성
+    If resultSheet Is Nothing Then
+        Set resultSheet = Worksheets.Add
+        resultSheet.Name = "CheckResults"
+    End If
+    
+    ' 시트 초기화
+    resultSheet.Cells.Clear
+    
+    ' 결과를 첫 번째 행에 헤더로 추가
+    resultSheet.Cells(1, 1).Value = "셀 주소"
+    resultSheet.Cells(1, 2).Value = "텍스트 값"
+    resultSheet.Cells(1, 3).Value = "수식 값"
+    resultSheet.Cells(1, 4).Value = "잠금 여부"
+    
+    ' 결과를 시트에 기록
+    rowIndex = 2 ' 첫 번째 행은 헤더이므로 인덱스를 2로 시작
+    For Each cell In Range("A1:" & selectedRange.Address)
+        ' 셀이 텍스트 또는 수식을 포함하는지 확인
+        If VarType(cell.Value) = vbString Or cell.HasFormula Then
+            outputText = "셀(" & cell.Address & "): "
+            If VarType(cell.Value) = vbString Then
+                outputText = outputText & "텍스트 '" & cell.Value & "' 포함, "
+            End If
+            If cell.HasFormula Then
+                outputText = outputText & "수식 '" & cell.Formula & "' 포함, "
+            End If
+            outputText = outputText & "잠김 여부: " & IIf(cell.Locked, "잠김", "해제")
+            
+            ' 결과를 새로운 시트에 기록
+            resultSheet.Cells(rowIndex, 1).Value = cell.Address
+            resultSheet.Cells(rowIndex, 2).Value = IIf(VarType(cell.Value) = vbString, cell.Value, "")
+            resultSheet.Cells(rowIndex, 3).Formula = IIf(cell.HasFormula, "'" & cell.Formula, "")
+            resultSheet.Cells(rowIndex, 4).Value = IIf(cell.Locked, "잠김", "해제")
+            rowIndex = rowIndex + 1
+        End If
+    Next cell
+    
+    ' 완료 메시지 표시
+    MsgBox "결과가 'CheckResults' 시트에 저장되었습니다.", vbInformation
+End Sub

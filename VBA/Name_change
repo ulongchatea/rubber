@@ -1,0 +1,23 @@
+Sub 변경하기()
+    On Error Resume Next
+    
+    ' 문지훈을 MJH()로 변경
+    Cells.Replace What:="문지훈", Replacement:="MJH()", LookAt:=xlWhole, MatchCase:=False
+    
+    ' 박수민을 PSM()로 변경
+    Cells.Replace What:="박수민", Replacement:="PSM()", LookAt:=xlWhole, MatchCase:=False
+    
+    ' 심다흰을 SDH()로 변경
+    Cells.Replace What:="심다흰", Replacement:="SDH()", LookAt:=xlWhole, MatchCase:=False
+    
+    ' 박상영을 PSY()로 변경
+    Cells.Replace What:="박상영", Replacement:="PSY()", LookAt:=xlWhole, MatchCase:=False
+    
+    ' 윤예나를 YYN()로 변경
+    Cells.Replace What:="윤예나", Replacement:="YYN()", LookAt:=xlWhole, MatchCase:=False
+    
+    ' 정성령을 JSR()로 변경
+    Cells.Replace What:="정성령", Replacement:="JSR()", LookAt:=xlWhole, MatchCase:=False
+    
+    On Error GoTo 0
+End Sub

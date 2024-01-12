@@ -1,0 +1,55 @@
+Sub LockNonRedActiveCells()
+    Dim ws As Worksheet
+    Dim cell As Range
+    Dim activeArea As Range
+    
+    ' 현재 활성화된 시트를 가져옴
+    Set ws = ActiveSheet
+    
+    ' 활성화된 영역을 가져옴
+    On Error Resume Next
+    Set activeArea = Selection
+    On Error GoTo 0
+    
+    If Not activeArea Is Nothing Then
+        ' 활성화된 영역의 각 셀에 대해 반복
+        For Each cell In activeArea
+            ' 셀의 글자 색이 빨간색이 아닌 경우
+            If cell.Font.Color <> RGB(255, 0, 0) Then
+                ' 셀의 주소가 병합된 범위에 속하는 경우
+                If IsCellInMergedRange(cell, ws.Range("T2,BN3")) Then
+                    ' T2나 BN3이 포함된 병합된 범위인 경우에는 잠금 해제
+                    cell.MergeArea.Locked = False
+                Else
+                    ' T2나 BN3이 아닌 경우에는 잠금 설정
+                    cell.Locked = True
+                End If
+            End If
+        Next cell
+        
+        ' 시트 보호
+        ws.Protect Password:="jw0719", UserInterfaceOnly:=True
+    Else
+        MsgBox "활성화된 셀이 없습니다.", vbExclamation
+    End If
+    
+    ' 활성화된 시트에서 T2:AT2 범위의 셀 잠금해제
+    ActiveSheet.Unprotect Password:="jw0719"
+    ActiveSheet.Range("T2:AT2").Locked = False
+    ActiveSheet.Protect Password:="jw0719"
+    
+    ' 활성화된 시트에서 BN3:CK3 범위의 셀 잠금해제
+    ActiveSheet.Unprotect Password:="jw0719"
+    ActiveSheet.Range("BN3:CK3").Locked = False
+    ActiveSheet.Protect Password:="jw0719"
+    
+    
+End Sub
+
+Function IsCellInMergedRange(cell As Range, mergedRange As Range) As Boolean
+    Dim intersectRange As Range
+    On Error Resume Next
+    Set intersectRange = Intersect(cell, mergedRange)
+    On Error GoTo 0
+    IsCellInMergedRange = Not intersectRange Is Nothing
+End Function

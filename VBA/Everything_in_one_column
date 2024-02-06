@@ -1,0 +1,33 @@
+Sub CombineCellsToSingleColumn()
+    Dim wsSource As Worksheet
+    Dim wsTarget As Worksheet
+    Dim lastRowSource As Long
+    Dim lastRowTarget As Long
+    Dim newRow As Long
+    Dim cell As Range
+    Dim rngSource As Range
+    
+    ' 현재 활성화된 시트를 원본 데이터가 있는 시트로 설정
+    Set wsSource = ActiveSheet
+    
+    ' 새로운 시트 생성
+    Set wsTarget = ThisWorkbook.Sheets.Add
+    
+    ' 데이터를 정리할 새로운 시트의 시작 행
+    newRow = 1
+    
+    ' 원본 데이터가 있는 마지막 행을 찾기
+    lastRowSource = wsSource.Cells(wsSource.Rows.Count, "A").End(xlUp).Row
+    
+    ' 모든 셀 값을 한 열로 정리하여 새로운 시트에 입력
+    For Each rngSource In wsSource.UsedRange.Rows
+        For Each cell In rngSource.Cells
+            If Not IsEmpty(cell) Then
+                lastRowTarget = wsTarget.Cells(wsTarget.Rows.Count, "A").End(xlUp).Row
+                wsTarget.Cells(lastRowTarget + 1, 1).Value = cell.Value
+            End If
+        Next cell
+    Next rngSource
+    
+    MsgBox "데이터가 새로운 시트에 한 열로 정리되었습니다.", vbInformation
+End Sub

@@ -1,0 +1,38 @@
+Sub 특정_텍스트_변경_및_검색_셀_오른쪽에_A_입력() 
+    Dim rng As Range 
+    Dim findRange As Range 
+    Dim currentCell As Cell 
+    Dim nextCellRange As Range 
+    Dim userInput As String 
+ 
+    ' 사용자 입력 받기 
+    userInput = InputBox("값을 입력하세요:", "사용자 입력") 
+ 
+    ' 'abcde'를 검색한 후 해당 위치의 오른쪽 셀로 이동하고 'A' 입력 
+    Set findRange = ActiveDocument.Range 
+    findRange.Find.ClearFormatting 
+    findRange.Find.Text = "제 조 번 호" 
+    Do While findRange.Find.Execute 
+        If findRange.Find.Found Then 
+            ' 'abcde'를 찾은 경우 
+            Set currentCell = findRange.Cells(1) 
+             
+            ' 오른쪽 셀의 Range 찾기 
+            Set nextCellRange = currentCell.Range.Next(wdCell) 
+             
+            If Not nextCellRange Is Nothing Then 
+                ' 오른쪽 셀에 사용자 입력 값을 입력하고 가운데 정렬 
+                nextCellRange.Text = userInput 
+                nextCellRange.ParagraphFormat.Alignment = wdAlignParagraphCenter 
+            End If 
+        End If 
+    Loop 
+ 
+    ' 'abcde'를 다시 '제 조 번 호'로 변경 
+    Set rng = ActiveDocument.Range 
+    rng.Find.ClearFormatting 
+    rng.Find.Replacement.ClearFormatting 
+    rng.Find.Text = "abcde" 
+    rng.Find.Replacement.Text = "제 조 번 호" 
+    rng.Find.Execute Replace:=wdReplaceAll 
+End Sub

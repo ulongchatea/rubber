@@ -21,7 +21,12 @@ Sub 변경하기()
     
     ' 심선우을 SSW()로 변경
     Cells.Replace What:="심선우", Replacement:="SSW()", LookAt:=xlWhole, MatchCase:=False
-
+    ' 권성은을 KSE()로 변경
+    Cells.Replace What:="권성은", Replacement:="KSE()", LookAt:=xlWhole, MatchCase:=False
+    ' 이정선을 LJS()로 변경
+    Cells.Replace What:="이정선", Replacement:="LJS()", LookAt:=xlWhole, MatchCase:=False
+    ' 김태성을 KTS()로 변경
+    Cells.Replace What:="김태성", Replacement:="KTS()", LookAt:=xlWhole, MatchCase:=False
     
     On Error GoTo 0
 End Sub

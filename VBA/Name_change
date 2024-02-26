@@ -13,11 +13,15 @@ Sub 변경하기()
     ' 박상영을 PSY()로 변경
     Cells.Replace What:="박상영", Replacement:="PSY()", LookAt:=xlWhole, MatchCase:=False
     
-    ' 윤예나를 YYN()로 변경
-    Cells.Replace What:="윤예나", Replacement:="YYN()", LookAt:=xlWhole, MatchCase:=False
+    ' 허다형을 HDH()로 변경
+    Cells.Replace What:="허다형", Replacement:="HDH()", LookAt:=xlWhole, MatchCase:=False
     
-    ' 정성령을 JSR()로 변경
-    Cells.Replace What:="정성령", Replacement:="JSR()", LookAt:=xlWhole, MatchCase:=False
+    ' 황미호을 HMH()로 변경
+    Cells.Replace What:="황미호", Replacement:="HMH()", LookAt:=xlWhole, MatchCase:=False
+    
+    ' 심선우을 SSW()로 변경
+    Cells.Replace What:="심선우", Replacement:="SSW()", LookAt:=xlWhole, MatchCase:=False
+
     
     On Error GoTo 0
 End Sub

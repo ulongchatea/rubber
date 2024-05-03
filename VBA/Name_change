@@ -27,6 +27,11 @@ Sub 변경하기()
     Cells.Replace What:="이정선", Replacement:="LJS()", LookAt:=xlWhole, MatchCase:=False
     ' 김태성을 KTS()로 변경
     Cells.Replace What:="김태성", Replacement:="KTS()", LookAt:=xlWhole, MatchCase:=False
+    ' 김예본을 KYB()로 변경
+    Cells.Replace What:="김예본", Replacement:="KYB()", LookAt:=xlWhole, MatchCase:=False
+    ' 채희웅을 CHW()로 변경
+    Cells.Replace What:="채희웅", Replacement:="CHW()", LookAt:=xlWhole, MatchCase:=False
+
     
     On Error GoTo 0
 End Sub

@@ -1,0 +1,203 @@
+# 리드타임(시험완료일-의뢰일)
+SELECT
+  SUBSTR(REQUEST_NO, 1, 2) AS request_type,
+  AVG(TO_DATE(TEST_END_DATE, 'YYYYMMDD') - TO_DATE(TEST_RECEPTION_DATE, 'YYYYMMDD')) AS avg_date_diff
+FROM TB_TEST_REQUEST
+WHERE (REQUEST_NO LIKE 'LP%' OR REQUEST_NO LIKE 'LR%' OR REQUEST_NO LIKE 'LS%')
+  AND SUBSTR(TEST_END_DATE, 1, 4) = '2024'
+  AND SUBSTR(TEST_END_DATE, 5, 2) = '04'
+  AND TEST_END_DATE IS NOT NULL
+  AND TEST_RECEPTION_DATE IS NOT NULL
+GROUP BY SUBSTR(REQUEST_NO, 1, 2);
+
+# 시험건수, 배치수
+SELECT 
+    CASE 
+        WHEN REQUEST_NO LIKE 'LP%' THEN 'LP'
+        WHEN REQUEST_NO LIKE 'LT%' THEN 'LT'
+        WHEN REQUEST_NO LIKE 'LR%' THEN 'LR'
+        WHEN REQUEST_NO LIKE 'LS%' THEN 'LS'
+        WHEN REQUEST_NO LIKE 'LX%' THEN 'LX'
+    END AS request_prefix,
+    COUNT(*) AS lp_request_count,
+    SUM(SUB_BATCH_CNT) AS total_sub_batch_cnt
+FROM TB_TEST_REQUEST
+WHERE TEST_END_DATE LIKE '202404%'
+  AND (REQUEST_NO LIKE 'LP%'
+       OR REQUEST_NO LIKE 'LT%'
+       OR REQUEST_NO LIKE 'LR%'
+       OR REQUEST_NO LIKE 'LS%'
+       OR REQUEST_NO LIKE 'LX%')
+GROUP BY 
+    CASE
+        WHEN REQUEST_NO LIKE 'LP%' THEN 'LP'
+        WHEN REQUEST_NO LIKE 'LT%' THEN 'LT' 
+        WHEN REQUEST_NO LIKE 'LR%' THEN 'LR'
+        WHEN REQUEST_NO LIKE 'LS%' THEN 'LS'
+        WHEN REQUEST_NO LIKE 'LX%' THEN 'LX'
+    END;
+    
+
+
+WITH cte AS (
+    SELECT
+        CASE
+            WHEN REQUEST_NO LIKE 'LP%' THEN 'LP'
+            WHEN REQUEST_NO LIKE 'LT%' THEN 'LP'
+            WHEN REQUEST_NO LIKE 'LR%' THEN 'LR'
+            WHEN REQUEST_NO LIKE 'LX%' THEN 'LX'
+        END AS request_prefix,
+        SUBSTR(TEST_END_DATE, 1, 6) AS year_month,
+        COUNT(*) AS lp_request_count,
+        SUM(SUB_BATCH_CNT) AS total_sub_batch_cnt
+    FROM
+        TB_TEST_REQUEST
+    WHERE
+        TEST_END_DATE BETWEEN '20240101' AND '20240531'
+        AND (REQUEST_NO LIKE 'LP%'
+             OR REQUEST_NO LIKE 'LT%'
+             OR REQUEST_NO LIKE 'LR%'
+             OR REQUEST_NO LIKE 'LX%')
+    GROUP BY
+        CASE
+            WHEN REQUEST_NO LIKE 'LP%' THEN 'LP'
+            WHEN REQUEST_NO LIKE 'LT%' THEN 'LP'
+            WHEN REQUEST_NO LIKE 'LR%' THEN 'LR'
+            WHEN REQUEST_NO LIKE 'LX%' THEN 'LX'
+        END,
+        SUBSTR(TEST_END_DATE, 1, 6)
+)
+SELECT
+    year_month,
+    request_prefix,
+    SUM(lp_request_count) AS lp_request_count,
+    SUM(total_sub_batch_cnt) AS total_sub_batch_cnt
+FROM
+    cte
+GROUP BY
+    year_month,
+    request_prefix
+ORDER BY
+    year_month,
+    request_prefix;
+    
+
+    
+    
+#시험항목 수(시험미대상 포함)
+SELECT 
+    CASE
+        WHEN r.REQUEST_NO LIKE 'LP%' THEN 'LP'
+        WHEN r.REQUEST_NO LIKE 'LT%' THEN 'LT'
+        WHEN r.REQUEST_NO LIKE 'LR%' THEN 'LR'
+        WHEN r.REQUEST_NO LIKE 'LS%' THEN 'LS'
+        WHEN r.REQUEST_NO LIKE 'LX%' THEN 'LX'
+    END AS request_prefix,
+    SUM(cnt) AS total_result_count
+FROM (
+    SELECT REQUEST_NO, COUNT(*) AS cnt
+    FROM TB_TEST_RESULT
+    WHERE REQUEST_NO IN (
+        SELECT REQUEST_NO
+        FROM TB_TEST_REQUEST
+        WHERE TEST_END_DATE LIKE '202404%'
+        AND (REQUEST_NO LIKE 'LP%'
+             OR REQUEST_NO LIKE 'LT%'
+             OR REQUEST_NO LIKE 'LR%'
+             OR REQUEST_NO LIKE 'LS%'
+             OR REQUEST_NO LIKE 'LX%')
+    )
+    GROUP BY REQUEST_NO
+) r
+GROUP BY
+    CASE
+        WHEN r.REQUEST_NO LIKE 'LP%' THEN 'LP'
+        WHEN r.REQUEST_NO LIKE 'LT%' THEN 'LT'
+        WHEN r.REQUEST_NO LIKE 'LR%' THEN 'LR'
+        WHEN r.REQUEST_NO LIKE 'LS%' THEN 'LS'
+        WHEN r.REQUEST_NO LIKE 'LX%' THEN 'LX'
+    END;
+
+
+#시험항목 수(DECISION "N" 제외, 시험미대상 제외)
+SELECT
+    CASE
+        WHEN r.REQUEST_NO LIKE 'LP%' THEN 'LP'
+        WHEN r.REQUEST_NO LIKE 'LT%' THEN 'LT'
+        WHEN r.REQUEST_NO LIKE 'LR%' THEN 'LR'
+        WHEN r.REQUEST_NO LIKE 'LS%' THEN 'LS'
+        WHEN r.REQUEST_NO LIKE 'LX%' THEN 'LX'
+    END AS request_prefix,
+    SUM(cnt) AS total_result_count
+FROM (
+    SELECT
+        TR.REQUEST_NO,
+        COUNT(*) AS cnt
+    FROM
+        TB_TEST_RESULT TR
+    WHERE
+        TR.REQUEST_NO IN (
+            SELECT
+                REQUEST_NO
+            FROM
+                TB_TEST_REQUEST
+            WHERE
+                TEST_END_DATE LIKE '202404%'
+                AND (REQUEST_NO LIKE 'LP%'
+                     OR REQUEST_NO LIKE 'LT%'
+                     OR REQUEST_NO LIKE 'LR%'
+                     OR REQUEST_NO LIKE 'LS%'
+                     OR REQUEST_NO LIKE 'LX%')
+        )
+        AND TR.DECISION <> 'N'
+    GROUP BY
+        TR.REQUEST_NO
+) r
+GROUP BY
+    CASE
+        WHEN r.REQUEST_NO LIKE 'LP%' THEN 'LP'
+        WHEN r.REQUEST_NO LIKE 'LT%' THEN 'LT'
+        WHEN r.REQUEST_NO LIKE 'LR%' THEN 'LR'
+        WHEN r.REQUEST_NO LIKE 'LS%' THEN 'LS'
+        WHEN r.REQUEST_NO LIKE 'LX%' THEN 'LX'
+    END;
+
+
+
+#의뢰번호로 조회(시험결과, 시험의뢰 테이블) 
+SELECT * 
+FROM TB_TEST_RESULT
+WHERE REQUEST_NO = 'LR24050034';
+
+#제품 정규시험 시험항목 수(LP로 조회, 2024년 조건, 조건에 맞는 의뢰번호를 시험결과 테이블 합계)
+SELECT SUM(cnt) AS total_result_count
+FROM (
+  SELECT REQUEST_NO, COUNT(*) AS cnt
+  FROM TB_TEST_RESULT
+  WHERE REQUEST_NO IN (
+    SELECT REQUEST_NO
+    FROM TB_TEST_REQUEST
+    WHERE REQUEST_NO LIKE 'LR'
+    AND TEST_END_DATE LIKE '202405%'
+  )
+  GROUP BY REQUEST_NO
+);
+
+SELECT COUNT(DISTINCT TESTER) AS unique_tester_count
+FROM TB_TEST_RESULT
+WHERE REQUEST_NO IN (
+ SELECT REQUEST_NO
+ FROM TB_TEST_REQUEST
+ WHERE REQUEST_NO LIKE 'LR%'
+ AND TEST_END_DATE LIKE '202405%'
+);
+
+
+SELECT DISTINCT TESTER
+FROM TB_TEST_RESULT
+WHERE REQUEST_NO IN (
+  SELECT REQUEST_NO
+  FROM TB_TEST_REQUEST
+  WHERE REQUEST_NO LIKE 'LR%'
+  AND TEST_END_DATE LIKE '202405%'
+);

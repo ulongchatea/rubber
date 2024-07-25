@@ -1,0 +1,33 @@
+SELECT
+    CASE
+        WHEN REQUEST_NO LIKE 'LP%' THEN 'LP'
+        WHEN REQUEST_NO LIKE 'LT%' THEN 'LT'
+        WHEN REQUEST_NO LIKE 'LX%' THEN 'LX'
+        WHEN REQUEST_NO LIKE 'LR%' THEN 'LR'
+        WHEN REQUEST_NO LIKE 'LS%' THEN 'LS'
+    END AS request_prefix,
+    COUNT(*) AS total_count
+FROM
+    TB_TEST_RESULT TR
+WHERE
+    TR.REQUEST_NO IN (
+        SELECT REQUEST_NO
+        FROM TB_TEST_REQUEST
+        WHERE TEST_REQUEST_DATE LIKE '202405%'
+    )
+GROUP BY
+    CASE
+        WHEN REQUEST_NO LIKE 'LP%' THEN 'LP'
+        WHEN REQUEST_NO LIKE 'LT%' THEN 'LT'
+        WHEN REQUEST_NO LIKE 'LX%' THEN 'LX'
+        WHEN REQUEST_NO LIKE 'LR%' THEN 'LR'
+        WHEN REQUEST_NO LIKE 'LS%' THEN 'LS'
+    END
+ORDER BY
+    CASE
+        WHEN request_prefix = 'LP' THEN 1
+        WHEN request_prefix = 'LT' THEN 2
+        WHEN request_prefix = 'LX' THEN 3
+        WHEN request_prefix = 'LR' THEN 4
+        WHEN request_prefix = 'LS' THEN 5
+    END;

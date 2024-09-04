@@ -80,3 +80,73 @@ GROUP BY
     SUBSTR(r.REQUEST_NO, 3, 4)
 ORDER BY 
     request_month;
+
+
+
+## 배치합계, 시험건수 합계 ##
+
+-- 첫 번째 쿼리: 요청 번호의 접두사에 따른 카운트 계산
+SELECT 
+    r.request_month,
+    COUNT(DISTINCT CASE 
+        WHEN r.REQUEST_NO LIKE 'LP%' 
+        THEN r.REQUEST_NO 
+        END) AS LP_count,
+    COUNT(DISTINCT CASE 
+        WHEN r.REQUEST_NO LIKE 'LT%' 
+        AND t.PROGRESS_STATUS != '0001' 
+        THEN r.REQUEST_NO 
+        END) AS LT_count,
+    COUNT(DISTINCT CASE 
+        WHEN r.REQUEST_NO LIKE 'LX%' 
+        AND t.TEST_ASSIGNOR IN ('20200200', '20180370') 
+        AND t.TEST_TYPE = '0020' 
+        THEN r.REQUEST_NO 
+        END) AS LX_count_0001,
+    COUNT(DISTINCT CASE 
+        WHEN r.REQUEST_NO LIKE 'LR%' 
+        THEN r.REQUEST_NO 
+        END) AS LR_count,
+    COUNT(DISTINCT CASE 
+        WHEN (r.REQUEST_NO LIKE 'LS%' OR r.REQUEST_NO LIKE 'LX%') 
+        AND t.FIRST_TESTER = '20131058' 
+        THEN r.REQUEST_NO 
+        END) AS LS_LX_count,
+    COUNT(DISTINCT CASE 
+        WHEN r.REQUEST_NO LIKE 'LX%' 
+        AND t.TEST_ASSIGNOR NOT IN ('20200197', '20220401') 
+        THEN r.REQUEST_NO 
+        END) AS LX_count_0002,
+    COUNT(DISTINCT CASE 
+        WHEN r.REQUEST_NO LIKE 'LS%' 
+        AND t.FIRST_TESTER != '20131058' 
+        THEN r.REQUEST_NO 
+        END) AS LS,
+    COALESCE(sb.SUB_BATCH_CNT_SUM, 0) AS total_sub_batch_cnt  -- 월별 SUB_BATCH_CNT의 합계
+FROM 
+    (SELECT 
+         SUBSTR(r.REQUEST_NO, 3, 4) AS request_month,
+         r.REQUEST_NO
+     FROM TB_TEST_RESULT r
+     WHERE SUBSTR(r.REQUEST_NO, 3, 4) BETWEEN '2401' AND '2412'
+    ) r
+    LEFT JOIN TB_TEST_REQUEST t ON r.REQUEST_NO = t.REQUEST_NO
+    LEFT JOIN (
+        SELECT 
+            SUBSTR(REQUEST_NO, 3, 4) AS request_month,
+            SUM(SUB_BATCH_CNT) AS SUB_BATCH_CNT_SUM
+        FROM TB_TEST_REQUEST
+        WHERE REQUEST_NO LIKE 'LP%'
+        GROUP BY SUBSTR(REQUEST_NO, 3, 4)
+    ) sb ON r.request_month = sb.request_month
+WHERE 
+    (r.REQUEST_NO LIKE 'LP%' 
+    OR r.REQUEST_NO LIKE 'LR%' 
+    OR r.REQUEST_NO LIKE 'LT%' 
+    OR r.REQUEST_NO LIKE 'LX%' 
+    OR r.REQUEST_NO LIKE 'LS%')
+GROUP BY 
+    r.request_month, sb.SUB_BATCH_CNT_SUM
+ORDER BY 
+    r.request_month;
+

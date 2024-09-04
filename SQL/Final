@@ -150,3 +150,50 @@ GROUP BY
 ORDER BY 
     r.request_month;
 
+
+
+## 시험항목 수 계산 ##
+
+SELECT
+    SUBSTR(r.REQUEST_NO, 3, 4) AS request_month,
+    COUNT(CASE 
+        WHEN r.REQUEST_NO LIKE 'LP%' 
+        THEN 1 ELSE NULL END) AS LP_count,
+    COUNT(CASE 
+        WHEN r.REQUEST_NO LIKE 'LT%' 
+        AND t.PROGRESS_STATUS != '0001' 
+        THEN 1 ELSE NULL END) AS LT_count,
+    COUNT(CASE 
+        WHEN r.REQUEST_NO LIKE 'LX%' 
+        AND t.TEST_ASSIGNOR IN ('20200200', '20180370') 
+        AND t.TEST_TYPE = '0020' 
+        THEN 1 ELSE NULL END) AS LX_count_0001,
+    COUNT(CASE 
+        WHEN r.REQUEST_NO LIKE 'LR%' 
+        THEN 1 ELSE NULL END) AS LR_count,
+    COUNT(CASE 
+        WHEN (r.REQUEST_NO LIKE 'LS%' OR r.REQUEST_NO LIKE 'LX%') 
+        AND t.FIRST_TESTER = '20131058' 
+        THEN 1 ELSE NULL END) AS LS_LX_count,
+    COUNT(CASE 
+        WHEN r.REQUEST_NO LIKE 'LX%' 
+        AND t.TEST_ASSIGNOR NOT IN ('20200197', '20220401') 
+        THEN 1 ELSE NULL END) AS LX_count_0002,
+    COUNT(CASE 
+        WHEN r.REQUEST_NO LIKE 'LS%' 
+        AND t.FIRST_TESTER != '20131058' 
+        THEN 1 ELSE NULL END) AS LS_count
+FROM 
+    TB_TEST_RESULT r
+    LEFT JOIN TB_TEST_REQUEST t ON r.REQUEST_NO = t.REQUEST_NO
+WHERE 
+    (r.REQUEST_NO LIKE 'LP%' 
+    OR r.REQUEST_NO LIKE 'LR%' 
+    OR r.REQUEST_NO LIKE 'LT%' 
+    OR r.REQUEST_NO LIKE 'LX%' 
+    OR r.REQUEST_NO LIKE 'LS%')
+    AND SUBSTR(r.REQUEST_NO, 3, 4) BETWEEN '2401' AND '2412'
+GROUP BY 
+    SUBSTR(r.REQUEST_NO, 3, 4)
+ORDER BY 
+    SUBSTR(r.REQUEST_NO, 3, 4);

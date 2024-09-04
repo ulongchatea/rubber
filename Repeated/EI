@@ -1,0 +1,29 @@
+for i in ['Li', 'V', 'Cr', 'Co', 'Ni', 'Cu', 'As', 'Se', 'Mo', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'Sn', 'Sb', 'Ba', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb']:
+    typing(i)
+    time.sleep(0.1)
+    key_press_once('enter')
+    key_press_once('down_arrow')
+
+for i in ['33.000', '6.000', '660.000', '3.000', '12.000', '180.000', '0.900', '9.000', '180.000', '6.000', '6.000', '6.000', '9.000', '0.300', '360.000', '72.000', '84.000', '6.000', '6.000', '6.000', '6.000', '1.800', '0.480', '0.300']:
+    typing(i)
+    time.sleep(0.1)
+    key_press_once('enter')
+    key_press_once('down_arrow')
+
+for i in range(24):
+    typing("rmathrqnftnsanf")
+    time.sleep(0.1)
+    key_press_once('enter')
+    key_press_once('down_arrow')
+
+for i in range(24):
+    typing("dlgk")
+    time.sleep(0.1)
+    key_press_once('enter')
+    key_press_once('down_arrow')
+
+for i in range(24):
+    typing("dlgk")
+    time.sleep(0.1)
+    key_press_once('enter')
+    key_press_once('down_arrow')

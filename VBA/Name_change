@@ -33,6 +33,8 @@ Sub 변경하기()
     Cells.Replace What:="채희웅", Replacement:="CHW()", LookAt:=xlWhole, MatchCase:=False
     ' 김남희을 KNH()로 변경
     Cells.Replace What:="김남희", Replacement:="KNH()", LookAt:=xlWhole, MatchCase:=False
+    ' 정유정을 JYJ()로 변경
+    Cells.Replace What:="김남희", Replacement:="JYJ()", LookAt:=xlWhole, MatchCase:=False
 
     
     On Error GoTo 0

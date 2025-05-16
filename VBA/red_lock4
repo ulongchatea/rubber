@@ -1,0 +1,62 @@
+Sub LockCellsExceptRedText()
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim cell As Range
+    Dim mergedRange As Range
+    Dim hasRedText As Boolean
+    
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+    
+    ' 현재 시트 보호 해제
+    Set ws = ActiveSheet
+    ws.Unprotect Password:="jw0719"
+    
+    ' 모든 셀 잠금
+    ws.Cells.Locked = True
+    
+    ' 사용 영역으로만 범위 제한
+    Set rng = ws.UsedRange
+    
+    ' 병합된 셀만 확인하기 위한 최적화
+    Dim mergedCells As New Collection
+    On Error Resume Next
+    
+    ' 병합된 셀의 왼쪽 상단 셀만 수집
+    For Each cell In rng
+        If cell.MergeCells Then
+            If cell.Address = cell.MergeArea.Item(1).Address Then
+                mergedCells.Add cell, cell.Address
+            End If
+        End If
+    Next cell
+    
+    On Error GoTo 0
+    
+    ' 수집된 병합된 셀만 처리
+    For Each cell In mergedCells
+        Set mergedRange = cell.MergeArea
+        hasRedText = False
+        
+        ' 병합된 범위에서 빨간색 글자 확인
+        For Each subCell In mergedRange
+            If subCell.Font.Color = RGB(255, 0, 0) Then
+                hasRedText = True
+                Exit For
+            End If
+        Next subCell
+        
+        ' 빨간 글자가 있으면 잠금 해제
+        If hasRedText Then
+            mergedRange.Locked = False
+        End If
+    Next cell
+    
+    ' 시트 다시 보호
+    ws.Protect Password:="jw0719"
+    
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    
+    MsgBox "병합된 셀 중 빨간 글씨가 포함된 셀만 잠금 해제되었습니다.", vbInformation
+End Sub

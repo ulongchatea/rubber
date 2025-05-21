@@ -1,0 +1,65 @@
+Sub CombineSheetsToCSV_Cleaned()
+    Dim ws As Worksheet
+    Dim combinedData As String
+    Dim rowContent As String
+    Dim cell As Range
+    Dim row As Range
+    Dim filePath As String
+    Dim fileName As String
+    Dim fileNum As Integer
+    Dim lastCol As Long
+    Dim lastRow As Long
+    Dim i As Long, j As Long
+    Dim maxCol As Long
+
+    ' 엑셀 파일 저장 위치 확인
+    If ThisWorkbook.Path = "" Then
+        MsgBox "먼저 이 엑셀 파일을 저장해주세요.", vbExclamation
+        Exit Sub
+    End If
+
+    ' 파일 이름 지정 (.csv로)
+    fileName = ThisWorkbook.Name
+    If InStrRev(fileName, ".") > 0 Then
+        fileName = Left(fileName, InStrRev(fileName, ".") - 1)
+    End If
+    fileName = fileName & ".csv"
+    filePath = ThisWorkbook.Path & "\" & fileName
+
+    ' 각 시트 순회
+    For Each ws In ThisWorkbook.Sheets
+        With ws.UsedRange
+            lastRow = .Rows.Count
+            lastCol = 0
+            ' 마지막 실제 데이터 열 구하기 (오른쪽 불필요한 쉼표 제거 목적)
+            For i = 1 To .Rows.Count
+                For j = .Columns.Count To 1 Step -1
+                    If Trim(.Cells(i, j).Text) <> "" Then
+                        If j > lastCol Then lastCol = j
+                        Exit For
+                    End If
+                Next j
+            Next i
+
+            ' 내용 구성
+            For i = 1 To lastRow
+                rowContent = ""
+                For j = 1 To lastCol
+                    rowContent = rowContent & """" & Replace(.Cells(i, j).Text, """", """""") & ""","
+                Next j
+                If Len(rowContent) > 0 Then
+                    rowContent = Left(rowContent, Len(rowContent) - 1) ' 마지막 콤마 제거
+                End If
+                combinedData = combinedData & rowContent & vbCrLf
+            Next i
+        End With
+    Next ws
+
+    ' 파일 저장
+    fileNum = FreeFile
+    Open filePath For Output As #fileNum
+    Print #fileNum, combinedData
+    Close #fileNum
+
+    MsgBox "불필요한 공백 없이 CSV 저장 완료: " & vbCrLf & filePath, vbInformation
+End Sub

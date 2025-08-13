@@ -1,0 +1,74 @@
+Sub BuildUsageTable()
+    Const OUT_SHEET As String = "집계"   ' 결과 시트명
+    Const START_ROW As Long = 5          ' 데이터 시작 행(4행 헤더 → 5행부터)
+
+    Dim wsOut As Worksheet, ws As Worksheet
+    Dim lastR As Long, lastS As Long, lastRow As Long
+    Dim outRow As Long, i As Long
+    Dim dev As Variant, cnt As Variant
+
+    ' 결과 시트 준비
+    On Error Resume Next
+    Set wsOut = ThisWorkbook.Worksheets(OUT_SHEET)
+    On Error GoTo 0
+    If wsOut Is Nothing Then
+        Set wsOut = ThisWorkbook.Worksheets.Add(After:=Sheets(Sheets.Count))
+        wsOut.Name = OUT_SHEET
+    End If
+
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+    Application.EnableEvents = False
+
+    ' 초기화 & 헤더
+    wsOut.Cells.Clear
+    wsOut.Range("A1").Value = "주차(시트명)"
+    wsOut.Range("B1").Value = "기기번호(R)"
+    wsOut.Range("C1").Value = "사용횟수(S)"
+    outRow = 2
+
+    ' 모든 시트 순회(집계 시트 제외)
+    For Each ws In ThisWorkbook.Worksheets
+        If ws.Name <> OUT_SHEET Then
+            lastR = ws.Cells(ws.Rows.Count, "R").End(xlUp).Row
+            lastS = ws.Cells(ws.Rows.Count, "S").End(xlUp).Row
+            lastRow = IIf(lastR > lastS, lastR, lastS)
+
+            If lastRow >= START_ROW Then
+                For i = START_ROW To lastRow
+                    dev = ws.Cells(i, "R").Value
+                    cnt = ws.Cells(i, "S").Value
+                    If Len(Trim(CStr(dev))) > 0 And Len(Trim(CStr(cnt))) > 0 Then
+                        wsOut.Cells(outRow, 1).Value = ws.Name
+                        wsOut.Cells(outRow, 2).Value = dev
+                        wsOut.Cells(outRow, 3).Value = cnt
+                        outRow = outRow + 1
+                    End If
+                Next i
+            End If
+        End If
+    Next ws
+
+    ' 테이블로 변환(버전 호환을 위해 위치 인수 사용)
+    Dim lo As ListObject
+    On Error Resume Next
+    Set lo = wsOut.ListObjects(1)
+    On Error GoTo 0
+    If Not lo Is Nothing Then lo.Unlist
+
+    Dim lastOut As Long
+    lastOut = wsOut.Cells(wsOut.Rows.Count, "A").End(xlUp).Row
+    If lastOut >= 2 Then
+        ' SourceType, Source, LinkSource, XlListObjectHasHeaders
+        Set lo = wsOut.ListObjects.Add(xlSrcRange, wsOut.Range("A1:C" & lastOut), , xlYes)
+        lo.Name = "tblUsage"
+    End If
+
+Cleanup:
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    Application.EnableEvents = True
+
+    MsgBox "집계 완료: " & (outRow - 2) & "건", vbInformation
+End Sub
+

@@ -4,6 +4,9 @@ Sub 변경하기()
     ' 김민경을 KMK()로 변경
     Cells.Replace What:="김민경", Replacement:="KMK()", LookAt:=xlWhole, MatchCase:=False
 
+    ' 홍아라를 HAR()로 변경
+    Cells.Replace What:="홍아라", Replacement:="HAR()", LookAt:=xlWhole, MatchCase:=False
+
     ' 정유정을 JYJ()로 변경
     Cells.Replace What:="정유정", Replacement:="JYJ()", LookAt:=xlWhole, MatchCase:=False
 
